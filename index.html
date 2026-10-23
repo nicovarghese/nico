@@ -50,11 +50,11 @@ section{padding:110px max(24px,calc((100vw - 980px)/2));border-top:1px solid var
 .contact__links{display:flex;align-items:center;justify-content:center;gap:clamp(.75rem,1.55vw,1.5rem);margin-top:2.25rem}
 .contact__social-link{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;width:var(--circle-size);aspect-ratio:1;border:1px solid rgba(255,255,255,.08);border-radius:50%;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.045));color:#ddd9db;text-decoration:none;transition:background .18s ease,border-color .18s ease,transform .18s ease}
 
-.contact__logo{display:block;width:2.7rem;height:2.7rem;object-fit:contain}
+.contact__logo{display:block;width:4.5rem;height:4.5rem;border-radius:50%;object-fit:cover;mix-blend-mode:screen}
 .contact__social-link:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.23);background:linear-gradient(145deg,rgba(255,255,255,.15),rgba(255,255,255,.075))}
 .contact__social-link:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:700px){.contact{padding:clamp(10rem,25vh,13rem) 1.25rem 7rem}.contact::before{inset-inline:5%}.contact__dot{left:1rem}.contact__title{font-size:clamp(2.3rem,9vw,3.6rem)}.contact__links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;width:min(100%,20rem);margin-inline:auto}.contact__social-link{grid-row:auto}}
-@media(max-width:390px){.contact__links{grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;width:100%}.contact__social-link{width:4.15rem}.contact__social-link--email{width:100%;min-width:0;padding-inline:.4rem;font-size:.78rem}.contact__social-link--email .contact__logo{width:1.6rem;height:1.6rem;margin-right:.35rem}}
+@media(max-width:390px){.contact__links{grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;width:100%}.contact__social-link{width:4.15rem}.contact__social-link .contact__logo{width:3.5rem;height:3.5rem}.contact__social-link--email{width:100%;min-width:0;padding-inline:.4rem;font-size:.78rem}.contact__social-link--email .contact__logo{width:1.6rem;height:1.6rem;margin-right:.35rem}}
 @media(prefers-reduced-motion:reduce){.contact *,.contact *::before,.contact *::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
 .interests-typography{position:relative;isolation:isolate;overflow:hidden;display:grid;min-height:78svh;align-content:center;gap:clamp(2rem,5vw,3.5rem);padding:clamp(4rem,9vw,8rem) max(24px,calc((100vw - 1100px)/2));background:#121212;color:#f3f1ee}
 .terminal-rain{position:absolute;z-index:-1;inset:0;width:100%;height:100%;pointer-events:none;opacity:.62}
@@ -116,7 +116,7 @@ section{padding:110px max(24px,calc((100vw - 980px)/2));border-top:1px solid var
 .interest-note-toggle span{color:#ff737f}
 @media(max-width:800px){.interest-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.interest-grid{grid-template-columns:1fr}.interests-showcase{padding-inline:20px}}
-@media(max-width:700px){header{height:72px}.hero{height:calc(100svh - 72px);min-height:640px;background-size:36px 36px}.hero-copy{padding-top:76px}.title-wrap .greeting{top:-30px;font-size:24px}.hero h1{font-size:clamp(60px,15vw,96px)}.hero .intro{margin-top:22px}.hero .tag{font-size:12px}.portrait{width:min(740px,135vw);bottom:-4px}.scribble{width:min(190px,48vw);top:calc(100% - 390px)}.denim{width:130px;left:calc(50% - 190px);bottom:88px}.chrome{width:130px;right:calc(50% - 198px);bottom:115px}.spiral{width:96px;left:calc(50% - 184px);top:60%}.scroll{display:none}}
+@media(max-width:700px){header{height:72px}.hero{height:calc(100svh - 72px);min-height:640px;background-size:36px 36px}.hero-copy{padding-top:76px}.title-wrap .greeting{top:-30px;font-size:24px}.hero h1{font-size:clamp(46px,12.5vw,72px)}.hero .intro{margin-top:22px}.hero .tag{font-size:12px}.portrait{width:min(740px,120vw);bottom:-4px}.sticker,.scribble{display:none}.scroll{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.brand img,.hero h1,.denim,.chrome,.scribble,.spiral{animation:none;transition:none}}
 
   .projects-section {
@@ -383,6 +383,9 @@ html { scroll-padding-top: 1rem; }
 .portfolio-about .about__bottom { grid-template-columns: minmax(3rem, .25fr) minmax(0, 1.5fr) minmax(9rem, .55fr); }
 .about__copy { display: flex; flex-direction: column; align-items: flex-start; }
 .about__cta { margin-top: 1.5rem; }
+.about-film { padding: clamp(4rem, 8vw, 7rem) max(24px, calc((100vw - 1080px)/2)); border-top: 1px solid rgba(255,255,255,.08); background: #111011; color: #f4efed; }
+.about-film__frame { overflow: hidden; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: #050405; box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+.about-film__video { display: block; width: 100%; max-height: min(72vh, 720px); aspect-ratio: 16 / 9; background: #050405; object-fit: contain; }
 .projects-section {
   padding-block: clamp(4.5rem, 9vw, 7rem);
   border-top: 1px solid var(--line);
@@ -476,6 +479,8 @@ main > section[id] { scroll-margin-top: 1rem; }
 @media (max-width: 700px) {
   .contact__links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .contact__social-link { grid-row: auto; }
+  .contact__social-link--email { width: 100%; min-width: 0; padding: .5rem .3rem; font-size: .7rem; }
+  .contact__social-link--email .contact__logo { flex: 0 0 1.35rem; width: 1.35rem; height: 1.35rem; margin-right: .3rem; }
   .projects-grid { grid-template-columns: 1fr; }
   .future-grid { grid-template-columns: 1fr; }
   .site-footer { justify-content: center; text-align: center; }
@@ -617,6 +622,9 @@ main > section[id] { scroll-margin-top: 1rem; }
 .closing-paper.is-crumpling .closing-paper-hint{opacity:.72}
 .closing-paper[role="button"]:focus-visible{outline:3px solid #fff;outline-offset:6px}
 @media (max-width: 700px) {
+  .interest-filter { min-height: 2.75rem; }
+  .interest-carousel__button { width: 2.75rem; height: 2.75rem; }
+  .closing-paper { touch-action: pan-y; }
   .hero-character-wrap { position: relative; top: auto; right: auto; bottom: auto; left: auto; align-self: center; width: clamp(76px, 22vw, 100px); margin: 1.1rem 0 0; }
   .about__statement { flex-direction: column-reverse; align-items: flex-end; gap: 0.65rem; }
   .angel-doodle { width: 68px; }
@@ -680,6 +688,13 @@ main > section[id] { scroll-margin-top: 1rem; }
 <img class="about__character" src="about-character.png" alt="Pink illustrated character" loading="lazy">
 </div>
 </div>
+</section>
+<section class="about-film" aria-label="Looping animation">
+  <div class="about-film__frame">
+    <video class="about-film__video" loop muted playsinline preload="none" aria-label="Looping hand-drawn animation">
+      <source src="Visual%20Test%2001%20-%20Change%20%28No%20AI%20used%29__Editing%20pack%20_%20hand-drawn%20animation%20plugin%20in%20bio___xoxo%20jordan%28MP4%29.mp4" type="video/mp4">
+    </video>
+  </div>
 </section>
 
 <div class="text-marquee" role="img" aria-label="Curious by nature · Learning by building · Exploring ideas">
@@ -903,9 +918,9 @@ main > section[id] { scroll-margin-top: 1rem; }
 <h2 class="contact__title" id="contact-title">Your turn. Say hello</h2>
 <p class="contact__intro contact-description">Have an opportunity, want to collaborate on something cool, or just say hello?</p>
 <div class="contact__links" aria-label="Contact details">
-<a class="contact__social-link" href="https://x.com/nic0o_lasss" target="_blank" rel="noopener noreferrer" aria-label="X, formerly Twitter (opens in a new tab)"><img class="contact__logo" src="contact-logos/x.png" alt=""></a>
-<a class="contact__social-link contact__social-link--email magnetic" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=niolasimexenozeus@gmail.com" target="_blank" rel="noopener noreferrer" aria-label="Email me in Gmail (opens in a new tab)"><img class="contact__logo" src="contact-logos/gmail.png" alt="">Email me</a>
-<a class="contact__social-link" href="https://www.instagram.com/aathu_leh?utm_source=qr&amp;rpxt=dTYwNXZsNGljYmI4" target="_blank" rel="noopener noreferrer" aria-label="Instagram (opens in a new tab)"><img class="contact__logo" src="contact-logos/instagram.png" alt=""></a>
+<a class="contact__social-link" href="https://x.com/nic0o_lasss" target="_blank" rel="noopener noreferrer" aria-label="X, formerly Twitter (opens in a new tab)"><img class="contact__logo" src="contact-logos/x-metal.jpg" alt=""></a>
+<a class="contact__social-link contact__social-link--email magnetic" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=niolasimexenozeus@gmail.com" target="_blank" rel="noopener noreferrer" aria-label="Email me in Gmail (opens in a new tab)"><img class="contact__logo" src="contact-logos/mail-metal.jpg" alt="">Email me</a>
+<a class="contact__social-link" href="https://www.instagram.com/aathu_leh?utm_source=qr&amp;rpxt=dTYwNXZsNGljYmI4" target="_blank" rel="noopener noreferrer" aria-label="Instagram (opens in a new tab)"><img class="contact__logo" src="contact-logos/instagram-metal.jpg" alt=""></a>
 </div>
 </div>
 </section>
@@ -989,7 +1004,7 @@ const motionAllowed=!window.matchMedia('(prefers-reduced-motion: reduce)').match
     paper.setAttribute('aria-pressed','false');
     paper.addEventListener('pointerdown',event=>{
       if(event.button!==0||pointerId!==null)return;
-      event.preventDefault();
+      if(event.pointerType==='mouse')event.preventDefault();
       pointerId=event.pointerId;
       startX=event.clientX;startY=event.clientY;
       setCrumpled(true);
@@ -1047,7 +1062,7 @@ const motionAllowed=!window.matchMedia('(prefers-reduced-motion: reduce)').match
     const randomGlyph=()=>glyphSet[Math.floor(Math.random()*glyphSet.length)];
     const resize=()=>{
       const bounds=section.getBoundingClientRect();
-      width=Math.max(1,bounds.width);height=Math.max(1,bounds.height);dpr=Math.min(window.devicePixelRatio||1,2);
+      width=Math.max(1,bounds.width);height=Math.max(1,bounds.height);dpr=Math.min(window.devicePixelRatio||1,window.matchMedia('(max-width: 700px)').matches?1.5:2);
       canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
       columns=layers.flatMap((layer,depth)=>{
         const count=Math.ceil(width/(layer.step*(depth===0?2.4:depth===1?1.7:1.2)));
@@ -1111,10 +1126,10 @@ const motionAllowed=!window.matchMedia('(prefers-reduced-motion: reduce)').match
   if(ctx&&maskCtx&&!reducedMotion){
     canvas.className='stipple-type-canvas';canvas.setAttribute('aria-hidden','true');heading.append(canvas);
     let width=0,height=0,dpr=1,particles=[],pointer={x:0,y:0,targetX:0,targetY:0,inside:false},stir=0,clock=0,frame=0,last=performance.now();
-    const sampleStep=3.25;
+    const sampleStep=window.matchMedia('(max-width: 700px)').matches?4.5:3.25;
     const makeParticles=()=>{
       const bounds=heading.getBoundingClientRect();
-      width=Math.max(1,bounds.width);height=Math.max(1,bounds.height);dpr=Math.min(window.devicePixelRatio||1,2);
+      width=Math.max(1,bounds.width);height=Math.max(1,bounds.height);dpr=Math.min(window.devicePixelRatio||1,window.matchMedia('(max-width: 700px)').matches?1.5:2);
       canvas.width=mask.width=Math.round(width*dpr);canvas.height=mask.height=Math.round(height*dpr);
       maskCtx.setTransform(dpr,0,0,dpr,0,0);maskCtx.clearRect(0,0,width,height);maskCtx.fillStyle='#fff';maskCtx.textBaseline='alphabetic';maskCtx.textAlign='left';
       heading.querySelectorAll(':scope > span').forEach(line=>{
@@ -1180,7 +1195,7 @@ if(motionAllowed){
     const settings={fontWeight:600,fontSize:150,letterSpacing:-.05,reach:200,softness:.7,specks:15,speed:1,bounce:.4,strokeWidth:1.5};
     const approach=(from,to,dt,seconds)=>from+(to-from)*(1-Math.exp(-dt/seconds));
     const layout=()=>{
-      width=Math.max(1,title.clientWidth);height=Math.max(1,title.clientHeight);dpr=Math.min(window.devicePixelRatio||1,2);
+      width=Math.max(1,title.clientWidth);height=Math.max(1,title.clientHeight);dpr=Math.min(window.devicePixelRatio||1,window.matchMedia('(max-width: 700px)').matches?1.5:2);
       canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
       const style=getComputedStyle(title),fontSize=Math.min(settings.fontSize,parseFloat(style.fontSize)),font=`${settings.fontWeight} ${fontSize}px ${style.fontFamily}`;
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font=font;ctx.textBaseline='alphabetic';ctx.textAlign='left';
@@ -1357,6 +1372,24 @@ interestFilters.forEach(filterButton=>filterButton.addEventListener('click',()=>
   if(activeInterestCard)activeInterestCard.classList.remove('is-prism-active');
   activeInterestCard=null;interestGrid.scrollTo({left:0});updateInterestCarousel();
 }));
+{
+  const video=document.querySelector('.about-film__video');
+  if(video){
+    const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reducedMotion)video.controls=true;
+    if('IntersectionObserver'in window){
+      const videoObserver=new IntersectionObserver(([entry])=>{
+        if(!entry.isIntersecting){video.pause();return}
+        if(!reducedMotion)video.play().catch(()=>{video.controls=true});
+      },{threshold:.25});
+      videoObserver.observe(video);
+    }else if(!reducedMotion){
+      video.play().catch(()=>{video.controls=true});
+    }else{
+      video.controls=true;
+    }
+  }
+}
 document.querySelectorAll('.interest-note-toggle').forEach((noteButton,index)=>{const card=noteButton.closest('.interest-card'),note=card.querySelector('.interest-note'),noteId=`interest-note-${index+1}`;note.id=noteId;note.setAttribute('aria-hidden','true');noteButton.setAttribute('aria-controls',noteId);noteButton.addEventListener('click',()=>{const open=noteButton.getAttribute('aria-expanded')==='true';noteButton.setAttribute('aria-expanded',String(!open));noteButton.firstChild.textContent=open?'Open field note ':'Close field note ';note.setAttribute('aria-hidden',String(open));card.classList.toggle('is-open',!open)})});
 </script>
 </body></html>
