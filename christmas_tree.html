@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D ASCII Christmas Tree 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styling for crisp terminal rendering and subtle glow */
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #07090b;
+      color: #cbd5e1;
+      font-family: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Courier New', monospace;
+      overflow: hidden;
+    }
+
+    .terminal-frame {
+      background: #0b0d10;
+      box-shadow:
+        0 25px 60px -15px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(148, 163, 184, 0.12),
+        0 0 40px rgba(46, 139, 87, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    canvas {
+      display: block;
+      background-color: #0b0d10;
+      image-rendering: crisp-edges;
+    }
+
+    .control-btn {
+      background: rgba(30, 41, 59, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      color: #94a3b8;
+      transition: all 0.15s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(51, 65, 85, 0.7);
+      border-color: rgba(255, 215, 0, 0.45);
+      color: #f8fafc;
+    }
+
+    .control-btn:active {
+      transform: scale(0.96);
+    }
+
+    .terminal-frame > div:first-child > div:first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .terminal-title {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .control-btn {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 420px) {
+      .terminal-title {
+        display: none;
+      }
+    }
+
+    .embed-mode,
+    .embed-mode body {
+      background: transparent !important;
+    }
+
+    .embed-mode body {
+      display: block !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+    }
+
+    .embed-mode #terminalContainer {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .embed-mode #terminalContainer > div:first-child {
+      display: none;
+    }
+
+    .embed-mode #canvasWrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      flex: 1 1 auto;
+      background: transparent !important;
+    }
+
+    .embed-mode canvas {
+      max-width: 100%;
+      max-height: 100%;
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-2 sm:p-4">
+
+  <!-- Main Terminal Container -->
+  <div id="terminalContainer" class="terminal-frame rounded-xl overflow-hidden flex flex-col max-w-full max-h-full">
+    <!-- Subtle Top Window Bar -->
+    <div class="flex items-center justify-between px-3 py-1.5 bg-[#0f1318] border-b border-slate-800/80 text-xs text-slate-400">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+        <span class="terminal-title ml-2 text-slate-500 tracking-wide truncate">christmas_tree_2026.ascii — 120×96 HD</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="btnPause" class="control-btn px-2 py-0.5 rounded text-[11px] cursor-pointer" title="Pause / Resume (Space)">
+          <span id="pauseLabel">Pause</span>
+        </button>
+        <button id="btnRestart" class="control-btn px-2 py-0.5 rounded text-[11px] cursor-pointer" title="Restart Animation (R)">
+          Restart
+        </button>
+        <button id="btnSave" class="control-btn px-2 py-0.5 rounded text-[11px] cursor-pointer" title="Save Screenshot (S)">
+          Save PNG
+        </button>
+      </div>
+    </div>
+
+    <!-- ASCII Grid Canvas Wrapper -->
+    <div id="canvasWrapper" class="relative flex items-center justify-center bg-[#0b0d10] overflow-hidden">
+      <canvas id="asciiCanvas"></canvas>
+      <!-- Toast notification for screenshot saved or state changes -->
+      <div id="toastMsg" class="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-md bg-slate-900/90 border border-amber-400/40 text-amber-200 text-xs opacity-0 transition-opacity duration-200">
+        Saved christmas_tree_2026.png
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 3D ASCII Christmas Tree 2026 — Ultra-Smooth Edition
+     * Pre-rendered Glyph Atlas + 120x96 Z-Buffered ASCII Grid + Spring Easing + Additive Bloom
+     */
+    (function () {
+      'use strict';
+
+      const embedMode = new URLSearchParams(window.location.search).has('embed');
+      if (embedMode) document.documentElement.classList.add('embed-mode');
+
+      // =========================================================================
+      // 1. CONFIGURATION & HIGH-DENSITY GRID CONSTANTS
+      // =========================================================================
+      const COLS = 120;
+      const ROWS = 96;
+      const BASE_CELL_W = 7;
+      const BASE_CELL_H = 11;
+      const GRID_SIZE = COLS * ROWS;
+
+      const BG_R = 11, BG_G = 13, BG_B = 16;
+      const BG_HEX = '#0b0d10';
+      const FONT_FAMILY = "'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Courier New', monospace";
+
+      // ASCII density & shading ramps
+      const RAMP_FOLIAGE = ['.', ':', '-', '=', '+', '*', '%', '#', '@'];
+      const RAMP_BARK    = ['.', ':', ';', '|', '!', 'I', '#', '@'];
+      const RAMP_SMOOTH  = ['.', ':', '-', '=', '+', '*', 'O', '@', '#'];
+
+      // Animation timeline timings (seconds)
+      const LOOP_DURATION = 18.0;
+      const LOOP_FADEOUT_START = 16.5;
+      const STAGE_TREE_START = 0.0, STAGE_TREE_END = 3.5;
+      const STAGE_GARLAND_START = 2.5, STAGE_GARLAND_END = 4.5;
+      const STAGE_BAUBLES_START = 3.5, STAGE_BAUBLES_END = 5.5;
+      const STAGE_LIGHTS_START = 4.5, STAGE_LIGHTS_END = 6.5;
+      const STAGE_GIFTS_START = 5.5, STAGE_GIFTS_END = 7.5;
+      const STAGE_STAR_START = 7.0, STAGE_STAR_END = 8.5;
+      const STAGE_MSG_START = 8.5, STAGE_MSG_END = 11.5;
+
+      const MESSAGE_TEXT = "MERRY CHRISTMAS 2026";
+      const TAU = Math.PI * 2;
+
+      // Tree world-space vertical bounds
+      const Y_BASE = -1.25;
+      const Y_TRUNK_TOP = -0.92;
+      const Y_TREE_TOP = 1.28;
+
+      // =========================================================================
+      // 2. DETERMINISTIC PRNG & FLUID EASING / SPRING FUNCTIONS
+      // =========================================================================
+      function createRNG(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a |= 0;
+          a = (a + 0x6D2B79F5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const smoothstep = (e0, e1, x) => {
+        const t = clamp((x - e0) / (e1 - e0), 0, 1);
+        return t * t * (3 - 2 * t);
+      };
+      const easeOutCubic = (x) => {
+        const t = clamp(x, 0, 1);
+        return 1 - Math.pow(1 - t, 3);
+      };
+      const easeOutBack = (x) => {
+        const t = clamp(x, 0, 1);
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+      };
+      // Damped harmonic spring (0 -> 1 with natural overshoot & settle)
+      const springEase = (x) => {
+        const t = clamp(x, 0, 1);
+        if (t === 0 || t === 1) return t;
+        return 1 - Math.exp(-6.5 * t) * Math.cos(10.5 * t);
+      };
+
+      // =========================================================================
+      // 3. DATA STRUCTURES FOR 3D POINT CLOUD, BLOOM HALOS & PARALLAX SNOW
+      // =========================================================================
+      const TYPE_CORE    = 0;
+      const TYPE_TRUNK   = 1;
+      const TYPE_NEEDLE  = 2;
+      const TYPE_SNOW_BR = 3;
+      const TYPE_GARLAND = 4;
+      const TYPE_BAUBLE  = 5;
+      const TYPE_LIGHT   = 6;
+      const TYPE_GIFT    = 7;
+      const TYPE_RIBBON  = 8;
+
+      let particles = [];
+      let snowFlakes = [];
+      let bloomHalos = []; // Collected per-frame for additive soft glow pass
+
+      function buildScene() {
+        const rng = createRNG(20261225);
+        particles = [];
+        const branchTips = [];
+
+        const randNorm = () => (rng() + rng() + rng() - 1.5) * 1.15;
+
+        const getConeRadius = (y) => {
+          const u = clamp((y - Y_TRUNK_TOP) / (Y_TREE_TOP - Y_TRUNK_TOP), 0, 1);
+          return 0.96 * Math.pow(1 - u, 0.88) + 0.02 * (1 - u);
+        };
+
+        // -----------------------------------------------------------------------
+        // A. TRUNK (Cylindrical textured brown bark)
+        // -----------------------------------------------------------------------
+        const trunkCount = 1350;
+        for (let i = 0; i < trunkCount; i++) {
+          const t = rng();
+          const y = lerp(Y_BASE, Y_TRUNK_TOP + 0.08, t);
+          const phi = rng() * TAU;
+          const rBase = 0.145 * (1 - 0.12 * t);
+          const barkRidge = 1 + 0.09 * Math.sin(phi * 9 + y * 18) + 0.05 * randNorm();
+          const r = rBase * barkRidge;
+
+          const x = Math.cos(phi) * r;
+          const z = Math.sin(phi) * r;
+
+          const mix = 0.5 + 0.5 * Math.sin(phi * 7 + y * 25) * 0.6 + (rng() - 0.5) * 0.4;
+          const cr = Math.round(lerp(92, 145, clamp(mix, 0, 1)));
+          const cg = Math.round(lerp(58, 94, clamp(mix, 0, 1)));
+          const cb = Math.round(lerp(33, 45, clamp(mix, 0, 1)));
+
+          particles.push({
+            x, y, z,
+            nx: Math.cos(phi), ny: 0.1, nz: Math.sin(phi),
+            r: cr, g: cg, b: cb,
+            type: TYPE_TRUNK,
+            revealOrder: (y - Y_BASE) / (Y_TREE_TOP - Y_BASE),
+            phase: rng() * TAU,
+            swayFactor: 0,
+            charOverride: null
+          });
+        }
+
+        // -----------------------------------------------------------------------
+        // B. DARK INNER FOLIAGE CORE
+        // -----------------------------------------------------------------------
+        const coreCount = 4800;
+        for (let i = 0; i < coreCount; i++) {
+          const u = Math.pow(rng(), 0.72);
+          const y = lerp(Y_TRUNK_TOP + 0.02, Y_TREE_TOP - 0.06, u);
+          const maxR = getConeRadius(y) * 0.69;
+          const r = maxR * (0.35 + 0.65 * Math.sqrt(rng()));
+          const phi = rng() * TAU;
+
+          particles.push({
+            x: Math.cos(phi) * r,
+            y,
+            z: Math.sin(phi) * r,
+            nx: Math.cos(phi) * 0.6,
+            ny: 0.2,
+            nz: Math.sin(phi) * 0.6,
+            r: 22, g: 50, b: 32,
+            type: TYPE_CORE,
+            revealOrder: (y - Y_BASE) / (Y_TREE_TOP - Y_BASE),
+            phase: phi,
+            swayFactor: 0.15 * (1 - u),
+            charOverride: '#'
+          });
+        }
+
+        // -----------------------------------------------------------------------
+        // C. 26 WHORLS OF DROOPING BRANCHES, NEEDLES & SNOW HIGHLIGHTS
+        // -----------------------------------------------------------------------
+        const numWhorls = 26;
+        for (let w = 0; w < numWhorls; w++) {
+          const u = w / (numWhorls - 1);
+          const yWhorl = lerp(Y_TRUNK_TOP + 0.03, Y_TREE_TOP - 0.03, u);
+          const coneR = getConeRadius(yWhorl);
+
+          const branchesInWhorl = Math.max(4, Math.round(14 * (1 - u * 0.68)));
+          const whorlAngleOffset = w * 0.6180339887 * TAU;
+
+          for (let b = 0; b < branchesInWhorl; b++) {
+            const baseAngle = whorlAngleOffset + (b / branchesInWhorl) * TAU + (rng() - 0.5) * 0.22;
+            const branchLen = coneR * (0.86 + 0.22 * rng());
+            const droopAmount = (0.14 + 0.07 * rng()) * (1 - 0.45 * u);
+            const liftTip = 0.035 * (1 - 0.3 * u);
+
+            const dirX = Math.cos(baseAngle);
+            const dirZ = Math.sin(baseAngle);
+            const sideX = -dirZ;
+            const sideZ = dirX;
+
+            const ptsPerBranch = Math.max(22, Math.round((30 + 115 * (1 - u)) * (branchLen / 0.85)));
+
+            for (let p = 0; p < ptsPerBranch; p++) {
+              const s = Math.pow(rng(), 0.78);
+              const dist = s * branchLen;
+
+              const yCurve = -droopAmount * Math.pow(s, 1.45) + liftTip * Math.pow(s, 3.2);
+              const spread = (0.025 + 0.095 * (1 - s * 0.45)) * (1 - 0.45 * u);
+
+              const lateral = randNorm() * spread;
+              const vertJitter = randNorm() * (0.018 + 0.022 * (1 - u));
+
+              const px = dirX * dist + sideX * lateral;
+              const pz = dirZ * dist + sideZ * lateral;
+              const py = yWhorl + yCurve + vertJitter;
+
+              const nx = clamp(dirX * 0.75 + sideX * (lateral * 3.0) + (rng() - 0.5) * 0.25, -1, 1);
+              const ny = clamp(0.45 + vertJitter * 8.0, -0.5, 1);
+              const nz = clamp(dirZ * 0.75 + sideZ * (lateral * 3.0) + (rng() - 0.5) * 0.25, -1, 1);
+              const nLen = Math.hypot(nx, ny, nz) || 1;
+
+              const isSnowHighlight = vertJitter > 0.012 && s > 0.28 && rng() < 0.23;
+
+              if (isSnowHighlight) {
+                particles.push({
+                  x: px, y: py + 0.008, z: pz,
+                  nx: nx / nLen, ny: Math.max(0.65, ny / nLen), nz: nz / nLen,
+                  r: 228, g: 242, b: 250,
+                  type: TYPE_SNOW_BR,
+                  revealOrder: (py - Y_BASE) / (Y_TREE_TOP - Y_BASE),
+                  phase: baseAngle + s * 2.0,
+                  swayFactor: s * (1 - u * 0.4),
+                  charOverride: rng() < 0.5 ? '*' : '.'
+                });
+              } else {
+                const shade = clamp(0.25 + 0.75 * s + (rng() - 0.5) * 0.25, 0, 1);
+                const cr = Math.round(lerp(30, 62, shade));
+                const cg = Math.round(lerp(112, 186, shade));
+                const cb = Math.round(lerp(66, 116, shade));
+
+                particles.push({
+                  x: px, y: py, z: pz,
+                  nx: nx / nLen, ny: ny / nLen, nz: nz / nLen,
+                  r: cr, g: cg, b: cb,
+                  type: TYPE_NEEDLE,
+                  revealOrder: (py - Y_BASE) / (Y_TREE_TOP - Y_BASE),
+                  phase: baseAngle + s * 2.0,
+                  swayFactor: s * (1 - u * 0.4),
+                  charOverride: null
+                });
+              }
+            }
+
+            const tipX = dirX * branchLen;
+            const tipZ = dirZ * branchLen;
+            const tipY = yWhorl - droopAmount + liftTip;
+            branchTips.push({
+              x: tipX, y: tipY, z: tipZ,
+              nx: dirX, ny: 0.25, nz: dirZ,
+              u,
+              phase: baseAngle + 2.0
+            });
+          }
+        }
+
+        // -----------------------------------------------------------------------
+        // D. SPIRAL TINSEL GARLAND (High-density ribbon interpolation)
+        // -----------------------------------------------------------------------
+        const garlandPoints = 2200;
+        const garlandTurns = 3.85;
+        for (let i = 0; i < garlandPoints; i++) {
+          const t = i / (garlandPoints - 1);
+          const u = lerp(0.05, 0.92, t);
+          const angle = t * garlandTurns * TAU;
+
+          const swagWave = Math.abs(Math.sin(angle * 3.0));
+          const swagDrop = -0.055 * swagWave * (1 - 0.45 * u);
+
+          const y = lerp(Y_TRUNK_TOP + 0.06, Y_TREE_TOP - 0.08, u) + swagDrop;
+          const r = getConeRadius(y) * 1.015 + 0.015 * swagWave;
+
+          const jitterR = (rng() - 0.5) * 0.025;
+          const jitterY = (rng() - 0.5) * 0.022;
+          const gx = Math.cos(angle) * (r + jitterR);
+          const gz = Math.sin(angle) * (r + jitterR);
+          const gy = y + jitterY;
+
+          const sparkle = rng();
+          const cr = 255;
+          const cg = Math.round(lerp(205, 245, sparkle));
+          const cb = Math.round(lerp(18, 155, sparkle * sparkle));
+
+          particles.push({
+            x: gx, y: gy, z: gz,
+            nx: Math.cos(angle), ny: 0.35, nz: Math.sin(angle),
+            r: cr, g: cg, b: cb,
+            type: TYPE_GARLAND,
+            revealOrder: t,
+            phase: t * 22.0 + rng() * 1.5,
+            swayFactor: 0.45 * (1 - u * 0.35),
+            charOverride: sparkle > 0.72 ? '*' : (sparkle > 0.35 ? '+' : '~')
+          });
+        }
+
+        // -----------------------------------------------------------------------
+        // E. ORNAMENTS / BAUBLES (Spherical 3D clusters with spring pop-in)
+        // -----------------------------------------------------------------------
+        const numBaubles = 52;
+        for (let b = 0; b < numBaubles; b++) {
+          const u = lerp(0.08, 0.86, (b + rng() * 0.7) / numBaubles);
+          const yCenter = lerp(Y_TRUNK_TOP + 0.08, Y_TREE_TOP - 0.14, u);
+          const angle = b * 2.3999632 + (rng() - 0.5) * 0.45;
+          const rCone = getConeRadius(yCenter) * (0.93 + 0.08 * rng());
+
+          const bx = Math.cos(angle) * rCone;
+          const bz = Math.sin(angle) * rCone;
+          const by = yCenter - 0.025;
+
+          const baubleRadius = 0.044 + 0.014 * (1 - u * 0.5);
+
+          const colorRoll = rng();
+          let baseR, baseG, baseB;
+          if (colorRoll < 0.60) {
+            baseR = 238; baseG = 52; baseB = 70;   // Crimson Red
+          } else if (colorRoll < 0.84) {
+            baseR = 255; baseG = 210; baseB = 82;  // Metallic Gold
+          } else {
+            baseR = 226; baseG = 232; baseB = 240; // Metallic Silver
+          }
+
+          const spherePts = 44;
+          const revealOrd = b / numBaubles;
+          for (let sp = 0; sp < spherePts; sp++) {
+            const fY = 1 - (sp / (spherePts - 1)) * 2;
+            const radAtY = Math.sqrt(Math.max(0, 1 - fY * fY));
+            const theta = sp * 2.3999632;
+            const sx = Math.cos(theta) * radAtY;
+            const sz = Math.sin(theta) * radAtY;
+
+            particles.push({
+              x: bx + sx * baubleRadius,
+              y: by + fY * baubleRadius,
+              z: bz + sz * baubleRadius,
+              cx: bx, cy: by, cz: bz, // center for spring scale pop-in
+              nx: sx, ny: fY, nz: sz,
+              r: baseR, g: baseG, b: baseB,
+              type: TYPE_BAUBLE,
+              revealOrder: revealOrd,
+              phase: rng() * TAU,
+              swayFactor: 0.4 * (1 - u * 0.4),
+              isCenter: sp === 0,
+              charOverride: null
+            });
+          }
+        }
+
+        // -----------------------------------------------------------------------
+        // F. TWINKLING FAIRY LIGHTS ON BRANCH TIPS
+        // -----------------------------------------------------------------------
+        const lightPalette = [
+          [255, 248, 220], // Warm White
+          [255, 215, 0],   // Gold
+          [255, 75, 92],   // Festive Red
+          [64, 224, 208],  // Cyan
+          [80, 235, 130]   // Emerald Green
+        ];
+
+        for (let i = 0; i < branchTips.length; i++) {
+          if (rng() > 0.78) continue;
+          const tip = branchTips[i];
+          const col = lightPalette[i % lightPalette.length];
+
+          const offsets = [
+            [0, 0, 0],
+            [0.011, 0.007, 0],
+            [-0.009, -0.007, 0.009]
+          ];
+          const phase = rng() * TAU;
+          const revealOrd = clamp((tip.y - Y_TRUNK_TOP) / (Y_TREE_TOP - Y_TRUNK_TOP), 0, 1);
+
+          for (let k = 0; k < offsets.length; k++) {
+            particles.push({
+              x: tip.x + offsets[k][0],
+              y: tip.y + offsets[k][1],
+              z: tip.z + offsets[k][2],
+              nx: tip.nx, ny: tip.ny, nz: tip.nz,
+              r: col[0], g: col[1], b: col[2],
+              type: TYPE_LIGHT,
+              revealOrder: revealOrd,
+              phase,
+              swayFactor: 0.65 * (1 - tip.u * 0.4),
+              isBulbCore: k === 0,
+              charOverride: k === 0 ? '@' : '*'
+            });
+          }
+        }
+
+        // -----------------------------------------------------------------------
+        // G. WRAPPED GIFT BOXES AROUND THE BASE OF THE TRUNK
+        // -----------------------------------------------------------------------
+        const giftSpecs = [
+          [0.35,  0.46, 0.25, 0.19, 0.23, 0.25,  [225, 48, 64],   [255, 215, 50]],
+          [1.25,  0.52, 0.22, 0.24, 0.21, -0.35, [42, 165, 95],   [235, 60, 75]],
+          [2.15,  0.48, 0.27, 0.17, 0.24, 0.50,  [52, 130, 225],  [235, 240, 248]],
+          [3.05,  0.50, 0.21, 0.21, 0.21, -0.20, [245, 195, 55],  [225, 48, 64]],
+          [3.95,  0.45, 0.24, 0.18, 0.22, 0.40,  [220, 55, 75],   [245, 245, 245]],
+          [4.85,  0.53, 0.26, 0.22, 0.23, -0.45, [38, 152, 88],   [255, 215, 50]],
+          [5.65,  0.47, 0.20, 0.16, 0.19, 0.15,  [65, 145, 235],  [255, 215, 50]]
+        ];
+
+        giftSpecs.forEach((spec, idx) => {
+          const [ang, dist, w, h, d, rotY, boxCol, ribCol] = spec;
+          const cx = Math.cos(ang) * dist;
+          const cz = Math.sin(ang) * dist;
+          const cy = Y_BASE + h * 0.5;
+          const cosR = Math.cos(rotY);
+          const sinR = Math.sin(rotY);
+
+          const toWorld = (lx, ly, lz) => ({
+            x: cx + lx * cosR - lz * sinR,
+            y: cy + ly,
+            z: cz + lx * sinR + lz * cosR
+          });
+
+          const normToWorld = (nx, ny, nz) => ({
+            nx: nx * cosR - nz * sinR,
+            ny,
+            nz: nx * sinR + nz * cosR
+          });
+
+          const step = 0.022;
+          const ribbonHalfW = 0.024;
+          const revealOrd = idx / giftSpecs.length;
+
+          // 1. Top face (+Y)
+          for (let lx = -w / 2; lx <= w / 2; lx += step) {
+            for (let lz = -d / 2; lz <= d / 2; lz += step) {
+              const isRib = Math.abs(lx) < ribbonHalfW || Math.abs(lz) < ribbonHalfW;
+              const pos = toWorld(lx, h / 2, lz);
+              const nrm = normToWorld(0, 1, 0);
+              const col = isRib ? ribCol : boxCol;
+              particles.push({
+                ...pos, ...nrm,
+                r: col[0], g: col[1], b: col[2],
+                type: isRib ? TYPE_RIBBON : TYPE_GIFT,
+                revealOrder: revealOrd,
+                phase: idx,
+                swayFactor: 0,
+                charOverride: isRib ? '+' : null
+              });
+            }
+          }
+
+          // 2. Front & Back faces (+/- Z)
+          for (const signZ of [-1, 1]) {
+            for (let lx = -w / 2; lx <= w / 2; lx += step) {
+              for (let ly = -h / 2; ly <= h / 2; ly += step) {
+                const isRib = Math.abs(lx) < ribbonHalfW;
+                const pos = toWorld(lx, ly, signZ * (d / 2));
+                const nrm = normToWorld(0, 0, signZ);
+                const col = isRib ? ribCol : boxCol;
+                particles.push({
+                  ...pos, ...nrm,
+                  r: col[0], g: col[1], b: col[2],
+                  type: isRib ? TYPE_RIBBON : TYPE_GIFT,
+                  revealOrder: revealOrd,
+                  phase: idx,
+                  swayFactor: 0,
+                  charOverride: isRib ? '|' : null
+                });
+              }
+            }
+          }
+
+          // 3. Left & Right faces (+/- X)
+          for (const signX of [-1, 1]) {
+            for (let lz = -d / 2; lz <= d / 2; lz += step) {
+              for (let ly = -h / 2; ly <= h / 2; ly += step) {
+                const isRib = Math.abs(lz) < ribbonHalfW;
+                const pos = toWorld(signX * (w / 2), ly, lz);
+                const nrm = normToWorld(signX, 0, 0);
+                const col = isRib ? ribCol : boxCol;
+                particles.push({
+                  ...pos, ...nrm,
+                  r: col[0], g: col[1], b: col[2],
+                  type: isRib ? TYPE_RIBBON : TYPE_GIFT,
+                  revealOrder: revealOrd,
+                  phase: idx,
+                  swayFactor: 0,
+                  charOverride: isRib ? '|' : null
+                });
+              }
+            }
+          }
+
+          // 4. Bow loops on top center
+          for (let b = 0; b < 28; b++) {
+            const tBow = (b / 28) * TAU;
+            const bowX = Math.cos(tBow) * 0.048;
+            const bowZ = Math.sin(tBow * 2) * 0.025;
+            const bowY = h / 2 + 0.015 + Math.abs(Math.sin(tBow)) * 0.032;
+            const pos = toWorld(bowX, bowY, bowZ);
+            particles.push({
+              ...pos,
+              nx: 0, ny: 1, nz: 0,
+              r: ribCol[0], g: ribCol[1], b: ribCol[2],
+              type: TYPE_RIBBON,
+              revealOrder: revealOrd,
+              phase: idx,
+              swayFactor: 0,
+              charOverride: '*'
+            });
+          }
+        });
+      }
+
+      /**
+       * Multi-layered parallax drifting background ASCII snow
+       */
+      function initSnow() {
+        const rng = createRNG(998877);
+        const layers = [
+          { chars: ['.', "'"], speedScale: 0.55, brightScale: 0.45, count: 95 },  // Far distant snow
+          { chars: ['.', '+'], speedScale: 0.90, brightScale: 0.72, count: 80 },  // Mid-ground snow
+          { chars: ['*', '+'], speedScale: 1.35, brightScale: 1.00, count: 55 }   // Near foreground-ish snow
+        ];
+        snowFlakes = [];
+        for (const layer of layers) {
+          for (let i = 0; i < layer.count; i++) {
+            snowFlakes.push({
+              col: rng() * COLS,
+              row: rng() * ROWS,
+              vy: (2.6 + rng() * 3.8) * layer.speedScale,
+              vx: (rng() - 0.5) * 1.3 * layer.speedScale,
+              swayAmp: (0.4 + rng() * 1.1) * layer.speedScale,
+              swayFreq: 0.65 + rng() * 1.1,
+              phase: rng() * TAU,
+              char: layer.chars[Math.floor(rng() * layer.chars.length)],
+              brightness: (0.45 + rng() * 0.55) * layer.brightScale
+            });
+          }
+        }
+      }
+
+      // =========================================================================
+      // 4. PRE-RENDERED GLYPH ATLAS & HIGH-SPEED Z-BUFFERED ASCII RENDERER
+      // =========================================================================
+      const canvas = document.getElementById('asciiCanvas');
+      const ctx = canvas.getContext('2d', { alpha: embedMode });
+
+      // Offscreen Glyph Atlas for sub-millisecond hardware-accelerated blitting
+      const atlasCanvas = document.createElement('canvas');
+      const atlasCtx = atlasCanvas.getContext('2d');
+      const tintCanvas = document.createElement('canvas');
+      const tintCtx = tintCanvas.getContext('2d');
+
+      const zBuffer = new Float32Array(GRID_SIZE);
+      const charBuffer = new Uint8Array(GRID_SIZE);
+      const rBuffer = new Uint8Array(GRID_SIZE);
+      const gBuffer = new Uint8Array(GRID_SIZE);
+      const bBuffer = new Uint8Array(GRID_SIZE);
+
+      let dpr = 1;
+      let cellW = BASE_CELL_W;
+      let cellH = BASE_CELL_H;
+      let atlasCellW = 14;
+      let atlasCellH = 22;
+
+      /**
+       * Pre-renders ASCII characters (32..126) into an offscreen crisp glyph atlas
+       */
+      function buildGlyphAtlas(pixelCellW, pixelCellH) {
+        atlasCellW = Math.max(8, Math.ceil(pixelCellW));
+        atlasCellH = Math.max(12, Math.ceil(pixelCellH));
+
+        const numChars = 95; // ASCII 32..126
+        atlasCanvas.width = atlasCellW * numChars;
+        atlasCanvas.height = atlasCellH;
+
+        tintCanvas.width = atlasCellW * numChars;
+        tintCanvas.height = atlasCellH;
+
+        const fontPx = Math.max(8, Math.round(atlasCellH * 0.92));
+        atlasCtx.clearRect(0, 0, atlasCanvas.width, atlasCanvas.height);
+        atlasCtx.font = `600 ${fontPx}px ${FONT_FAMILY}`;
+        atlasCtx.textAlign = 'center';
+        atlasCtx.textBaseline = 'middle';
+        atlasCtx.fillStyle = '#ffffff';
+
+        for (let code = 32; code <= 126; code++) {
+          const idx = code - 32;
+          const cx = (idx + 0.5) * atlasCellW;
+          const cy = atlasCellH * 0.52;
+          atlasCtx.fillText(String.fromCharCode(code), cx, cy);
+        }
+      }
+
+      /**
+       * Fits the 120x96 ASCII grid cleanly within the viewport with high-DPI sharpness
+       */
+      function resizeCanvas() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const maxW = window.innerWidth - (embedMode ? 0 : 20);
+        const maxH = window.innerHeight - (embedMode ? 0 : 54);
+
+        const idealW = COLS * BASE_CELL_W;
+        const idealH = ROWS * BASE_CELL_H;
+        const scale = Math.min(1.18, maxW / idealW, maxH / idealH);
+
+        cellW = Math.max(4.5, Math.floor(BASE_CELL_W * scale * 10) / 10);
+        cellH = Math.max(7.0, Math.floor(BASE_CELL_H * scale * 10) / 10);
+
+        const logicalW = Math.round(COLS * cellW);
+        const logicalH = Math.round(ROWS * cellH);
+
+        canvas.style.width = logicalW + 'px';
+        canvas.style.height = logicalH + 'px';
+        canvas.width = Math.round(logicalW * dpr);
+        canvas.height = Math.round(logicalH * dpr);
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+
+        buildGlyphAtlas(cellW * dpr, cellH * dpr);
+      }
+
+      function clearBuffers() {
+        zBuffer.fill(-1e9);
+        charBuffer.fill(32);
+        rBuffer.fill(BG_R);
+        gBuffer.fill(BG_G);
+        bBuffer.fill(BG_B);
+        bloomHalos.length = 0;
+      }
+
+      function putCell(col, row, depth, chCode, r, g, b) {
+        if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return;
+        const idx = row * COLS + col;
+        if (depth >= zBuffer[idx]) {
+          zBuffer[idx] = depth;
+          charBuffer[idx] = chCode;
+          rBuffer[idx] = clamp(r | 0, 0, 255);
+          gBuffer[idx] = clamp(g | 0, 0, 255);
+          bBuffer[idx] = clamp(b | 0, 0, 255);
+        }
+      }
+
+      function putText(startCol, row, text, r, g, b, depth = 100) {
+        for (let i = 0; i < text.length; i++) {
+          const code = text.charCodeAt(i);
+          if (code !== 32) {
+            putCell(startCol + i, row, depth, code, r, g, b);
+          }
+        }
+      }
+
+      // =========================================================================
+      // 5. 3D PROJECTION, STAR TOPPER & FLUID ANIMATION UPDATE
+      // =========================================================================
+      let elapsed = 0;
+      let lastTimestamp = 0;
+      let isPaused = false;
+
+      // Exponentially smoothed rotation velocity & subtle camera breathing sway
+      let currentRotAngle = 0;
+      let currentRotVel = 0.52;
+      const TARGET_ROT_VEL = 0.52;
+
+      const LIGHT_X = 0.48;
+      const LIGHT_Y = 0.65;
+      const LIGHT_Z = 0.59;
+
+      const CAM_DIST = 3.65;
+      const FOV_SCALE = 88.0; // tuned for 120x96 high-density grid
+      const ASPECT_X = BASE_CELL_H / BASE_CELL_W;
+
+      function projectPoint(wx, wy, wz, camYOffset, camXOffset) {
+        const relX = wx - camXOffset;
+        const relY = wy - (0.02 + camYOffset);
+        const relZ = CAM_DIST - wz;
+        if (relZ <= 0.25) return null;
+
+        const invZ = FOV_SCALE / relZ;
+        const col = Math.round(COLS * 0.5 + relX * invZ * ASPECT_X);
+        const row = Math.round(ROWS * 0.505 - relY * invZ);
+        return { col, row, depth: -relZ, invZ };
+      }
+
+      /**
+       * Renders the 5-pointed golden ASCII star topper at the tree apex (Stage 6)
+       */
+      function renderStarTopper(t, rotAngle, camYOffset, camXOffset, loopFade) {
+        if (t < STAGE_STAR_START) return;
+
+        const rawProg = clamp((t - STAGE_STAR_START) / (STAGE_STAR_END - STAGE_STAR_START), 0, 1);
+        const easeScale = springEase(rawProg);
+
+        // Soft ignition flash burst when the star crowns the apex
+        const flashWindow = clamp(1 - Math.abs(t - (STAGE_STAR_START + 0.35)) / 0.65, 0, 1);
+        const flash = flashWindow * flashWindow * flashWindow;
+
+        const apexProj = projectPoint(0, Y_TREE_TOP + 0.08, 0, camYOffset, camXOffset);
+        if (!apexProj) return;
+
+        const cx = apexProj.col;
+        const cy = apexProj.row;
+        const baseDepth = apexProj.depth + 0.4;
+
+        // Add soft additive bloom halo around the star topper
+        bloomHalos.push({
+          col: cx,
+          row: cy,
+          radiusCells: (6.5 + 8.0 * flash) * Math.min(1, easeScale),
+          r: 255,
+          g: 222,
+          b: 90,
+          alpha: (0.28 + 0.35 * flash) * Math.min(1, easeScale) * loopFade
+        });
+
+        // Radiating light rays during initial ignition flash
+        if (flash > 0.02) {
+          const rayChars = ['-', '|', '/', '\\', '*', '+'];
+          const numRays = 14;
+          const maxRayLen = 5 + 11 * flash;
+          for (let k = 0; k < numRays; k++) {
+            const ang = (k / numRays) * TAU + t * 0.85;
+            const dx = Math.cos(ang) * 1.45;
+            const dy = Math.sin(ang);
+            const ch = rayChars[k % rayChars.length].charCodeAt(0);
+            for (let step = 2.5; step <= maxRayLen; step += 1.1) {
+              const fade = (1 - step / (maxRayLen + 1)) * flash * loopFade;
+              const rc = Math.round(cx + dx * step);
+              const rr = Math.round(cy + dy * step);
+              putCell(
+                rc, rr, baseDepth - 0.05,
+                ch,
+                lerp(BG_R, 255, fade),
+                lerp(BG_G, 242, fade),
+                lerp(BG_B, 170, fade)
+              );
+            }
+          }
+        }
+
+        // 5-pointed star geometry in screen-space grid cells
+        const outerR = 5.4 * easeScale * (1 + 0.14 * flash);
+        const innerR = 2.3 * easeScale * (1 + 0.14 * flash);
+        const starTwist = Math.sin(rotAngle) * 0.22;
+
+        const verts = [];
+        for (let i = 0; i < 10; i++) {
+          const rad = i % 2 === 0 ? outerR : innerR;
+          const ang = -Math.PI / 2 + (i * Math.PI) / 5 + starTwist;
+          verts.push({
+            x: Math.cos(ang) * rad * 1.45,
+            y: Math.sin(ang) * rad
+          });
+        }
+
+        const minX = Math.floor(-outerR * 1.65);
+        const maxX = Math.ceil(outerR * 1.65);
+        const minY = Math.floor(-outerR * 1.25);
+        const maxY = Math.ceil(outerR * 1.25);
+
+        const pulse = 0.90 + 0.10 * Math.sin(t * 5.2);
+
+        for (let dy = minY; dy <= maxY; dy++) {
+          for (let dx = minX; dx <= maxX; dx++) {
+            let inside = false;
+            for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+              const xi = verts[i].x, yi = verts[i].y;
+              const xj = verts[j].x, yj = verts[j].y;
+              const intersect = ((yi > dy) !== (yj > dy)) &&
+                (dx < ((xj - xi) * (dy - yi)) / (yj - yi + 1e-6) + xi);
+              if (intersect) inside = !inside;
+            }
+
+            if (inside) {
+              const distNorm = Math.hypot(dx / 1.45, dy) / (outerR || 1);
+              const coreGlow = clamp(1 - distNorm * 0.65, 0, 1);
+
+              const r = 255;
+              const g = Math.round(lerp(208, 252, clamp(coreGlow * 0.5 + flash * 0.7, 0, 1)) * pulse);
+              const b = Math.round(lerp(20, 238, clamp(coreGlow * flash + flash * 0.65, 0, 1)));
+
+              const ch = distNorm < 0.35 ? 64 : (distNorm < 0.72 ? 35 : 42);
+              putCell(
+                cx + dx, cy + dy, baseDepth, ch,
+                lerp(BG_R, r, loopFade),
+                lerp(BG_G, g, loopFade),
+                lerp(BG_B, b, loopFade)
+              );
+            }
+          }
+        }
+      }
+
+      /**
+       * Renders "MERRY CHRISTMAS 2026" beneath the trunk with smooth per-letter fade & glide
+       */
+      function renderFestiveMessage(t, loopFade) {
+        if (t < STAGE_MSG_START) return 0;
+
+        const msgDuration = STAGE_MSG_END - STAGE_MSG_START;
+        const totalChars = MESSAGE_TEXT.length;
+        const startCol = Math.floor((COLS - totalChars) / 2);
+        const baseRow = ROWS - 8;
+
+        const festiveColors = [
+          [242, 68, 86],   // Festive Crimson Red
+          [255, 218, 52],  // Warm Gold
+          [68, 212, 124]   // Emerald Green
+        ];
+
+        let visibleLetterCount = 0;
+        for (let i = 0; i < totalChars; i++) {
+          const ch = MESSAGE_TEXT[i];
+          if (ch === ' ') continue;
+
+          // Staggered per-letter window for smooth fade + vertical glide
+          const letterStart = STAGE_MSG_START + (i / totalChars) * (msgDuration * 0.78);
+          const letterAlpha = easeOutCubic((t - letterStart) / 0.55) * loopFade;
+          if (letterAlpha <= 0.02) continue;
+
+          visibleLetterCount++;
+
+          const colorIdx = Math.floor((i * 0.5 + t * 1.6) % festiveColors.length);
+          const nextIdx = (colorIdx + 1) % festiveColors.length;
+          const blend = (i * 0.5 + t * 1.6) % 1;
+
+          const c1 = festiveColors[colorIdx];
+          const c2 = festiveColors[nextIdx];
+
+          const shimmer = 0.86 + 0.14 * Math.sin(t * 4.5 - i * 0.45);
+          const r = lerp(c1[0], c2[0], blend) * shimmer;
+          const g = lerp(c1[1], c2[1], blend) * shimmer;
+          const b = lerp(c1[2], c2[2], blend) * shimmer;
+
+          const glideOffset = (1 - easeOutCubic((t - letterStart) / 0.55)) * 1.6;
+          const waveOffset = Math.sin(t * 3.6 - i * 0.42) * 0.55;
+          const drawRow = Math.round(baseRow + glideOffset + waveOffset);
+
+          putCell(
+            startCol + i,
+            drawRow,
+            95,
+            ch.charCodeAt(0),
+            lerp(BG_R, r, letterAlpha),
+            lerp(BG_G, g, letterAlpha),
+            lerp(BG_B, b, letterAlpha)
+          );
+        }
+
+        return visibleLetterCount;
+      }
+
+      /**
+       * Renders continuous multi-layered drifting background ASCII snow
+       */
+      function updateAndRenderSnow(dt, t) {
+        for (let i = 0; i < snowFlakes.length; i++) {
+          const s = snowFlakes[i];
+          s.row += s.vy * dt;
+          s.col += s.vx * dt;
+
+          if (s.row >= ROWS) s.row -= ROWS;
+          if (s.col < 0) s.col += COLS;
+          if (s.col >= COLS) s.col -= COLS;
+
+          const swayCol = Math.round(s.col + Math.sin(t * s.swayFreq + s.phase) * s.swayAmp);
+          const drawRow = Math.floor(s.row);
+
+          const twinkle = 0.58 + 0.42 * Math.sin(t * 3.0 + s.phase);
+          const lum = (75 + 135 * s.brightness) * twinkle;
+
+          putCell(swayCol, drawRow, -50, s.char.charCodeAt(0), lum, lum + 8, lum + 18);
+        }
+      }
+
+      /**
+       * Main simulation + render step for one frame
+       */
+      function renderFrame(t, dt) {
+        clearBuffers();
+
+        // Seamless end-of-loop cross-fade dissolve (16.5s -> 18.0s)
+        const loopFade = t > LOOP_FADEOUT_START
+          ? 1 - smoothstep(LOOP_FADEOUT_START, LOOP_DURATION, t)
+          : 1.0;
+
+        // 1. Background drifting parallax snow (never fades out at loop boundary)
+        updateAndRenderSnow(dt, t);
+
+        // Smooth camera breathing sway
+        const camYOffset = Math.sin(t * 0.85) * 0.016;
+        const camXOffset = Math.cos(t * 0.55) * 0.022;
+
+        const rotAngle = currentRotAngle % TAU;
+        const rotDeg = (rotAngle * 180) / Math.PI;
+        const cosA = Math.cos(rotAngle);
+        const sinA = Math.sin(rotAngle);
+
+        let activeLights = 0;
+
+        // 2. Project & shade all 3D point-cloud elements with continuous cubic/spring easing
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          let alpha = 0;
+          let wx = p.x;
+          let wy = p.y;
+          let wz = p.z;
+
+          if (p.type === TYPE_CORE || p.type === TYPE_TRUNK || p.type === TYPE_NEEDLE || p.type === TYPE_SNOW_BR) {
+            const pStart = STAGE_TREE_START + p.revealOrder * (STAGE_TREE_END - STAGE_TREE_START - 0.55);
+            const localT = (t - pStart) / 0.55;
+            if (localT <= 0) continue;
+            const ease = easeOutCubic(localT);
+            alpha = ease * loopFade;
+            // Subtle upward rise on entrance
+            wy -= (1 - ease) * 0.05;
+          } else if (p.type === TYPE_GARLAND) {
+            const pStart = STAGE_GARLAND_START + p.revealOrder * (STAGE_GARLAND_END - STAGE_GARLAND_START - 0.45);
+            const localT = (t - pStart) / 0.45;
+            if (localT <= 0) continue;
+            const ease = easeOutCubic(localT);
+            alpha = ease * loopFade;
+          } else if (p.type === TYPE_BAUBLE) {
+            const pStart = STAGE_BAUBLES_START + p.revealOrder * (STAGE_BAUBLES_END - STAGE_BAUBLES_START - 0.65);
+            const localT = (t - pStart) / 0.65;
+            if (localT <= 0) continue;
+            const popScale = springEase(localT);
+            alpha = clamp(localT * 2.5, 0, 1) * loopFade;
+            // Scale bauble surface points smoothly around bauble center
+            wx = p.cx + (p.x - p.cx) * popScale;
+            wy = p.cy + (p.y - p.cy) * popScale;
+            wz = p.cz + (p.z - p.cz) * popScale;
+          } else if (p.type === TYPE_LIGHT) {
+            const pStart = STAGE_LIGHTS_START + p.revealOrder * (STAGE_LIGHTS_END - STAGE_LIGHTS_START - 0.55);
+            const localT = (t - pStart) / 0.55;
+            if (localT <= 0) continue;
+            alpha = easeOutCubic(localT) * loopFade;
+          } else if (p.type === TYPE_GIFT || p.type === TYPE_RIBBON) {
+            const pStart = STAGE_GIFTS_START + p.revealOrder * (STAGE_GIFTS_END - STAGE_GIFTS_START - 0.70);
+            const localT = (t - pStart) / 0.70;
+            if (localT <= 0) continue;
+            const dropEase = easeOutBack(localT);
+            alpha = clamp(localT * 2.2, 0, 1) * loopFade;
+            // Smooth drop-and-settle onto base
+            wy += (1 - dropEase) * 0.24;
+          }
+
+          if (alpha <= 0.015) continue;
+
+          // Gentle organic branch breathing sway
+          if (p.swayFactor > 0) {
+            const sway = Math.sin(t * 1.9 + p.phase) * 0.008 * p.swayFactor;
+            wy += sway;
+            wx += Math.cos(t * 1.4 + p.phase) * 0.004 * p.swayFactor;
+          }
+
+          // Rotate around Y-axis
+          const rx = wx * cosA - wz * sinA;
+          const rz = wx * sinA + wz * cosA;
+
+          const proj = projectPoint(rx, wy, rz, camYOffset, camXOffset);
+          if (!proj) continue;
+
+          const rnx = p.nx * cosA - p.nz * sinA;
+          const rnz = p.nx * sinA + p.nz * cosA;
+          const rny = p.ny;
+
+          const ndotl = clamp(rnx * LIGHT_X + rny * LIGHT_Y + rnz * LIGHT_Z, 0, 1);
+
+          let shade = 1.0;
+          let chCode = 42;
+          let outR = p.r;
+          let outG = p.g;
+          let outB = p.b;
+
+          if (p.type === TYPE_CORE) {
+            shade = 0.65;
+            chCode = 35;
+          } else if (p.type === TYPE_TRUNK) {
+            shade = 0.42 + 0.65 * ndotl;
+            const idx = Math.min(RAMP_BARK.length - 1, Math.floor(shade * (RAMP_BARK.length - 1)));
+            chCode = RAMP_BARK[idx].charCodeAt(0);
+          } else if (p.type === TYPE_NEEDLE) {
+            shade = 0.36 + 0.76 * ndotl;
+            const idx = Math.min(RAMP_FOLIAGE.length - 1, Math.floor(shade * (RAMP_FOLIAGE.length - 1)));
+            chCode = RAMP_FOLIAGE[idx].charCodeAt(0);
+          } else if (p.type === TYPE_SNOW_BR) {
+            shade = 0.65 + 0.42 * ndotl;
+            chCode = p.charOverride.charCodeAt(0);
+          } else if (p.type === TYPE_GARLAND) {
+            const glint = 0.80 + 0.38 * Math.sin(t * 5.2 + p.phase);
+            shade = (0.55 + 0.55 * ndotl) * glint;
+            chCode = p.charOverride.charCodeAt(0);
+            if (glint > 1.12 && rz > 0 && Math.random() < 0.08) {
+              bloomHalos.push({
+                col: proj.col, row: proj.row,
+                radiusCells: 2.2,
+                r: 255, g: 225, b: 90,
+                alpha: 0.14 * alpha
+              });
+            }
+          } else if (p.type === TYPE_BAUBLE) {
+            const spec = Math.pow(ndotl, 6) * 0.78;
+            shade = 0.38 + 0.68 * ndotl;
+            outR = p.r * shade + 255 * spec;
+            outG = p.g * shade + 255 * spec;
+            outB = p.b * shade + 255 * spec;
+            const idx = Math.min(RAMP_SMOOTH.length - 1, Math.floor(clamp(shade + spec, 0, 1) * (RAMP_SMOOTH.length - 1)));
+            chCode = RAMP_SMOOTH[idx].charCodeAt(0);
+            shade = 1.0;
+
+            if (p.isCenter && rz > 0.1 && ndotl > 0.55) {
+              bloomHalos.push({
+                col: proj.col, row: proj.row,
+                radiusCells: 2.8,
+                r: p.r, g: p.g, b: p.b,
+                alpha: 0.16 * alpha
+              });
+            }
+          } else if (p.type === TYPE_LIGHT) {
+            // Multi-harmonic sinusoidal twinkling
+            const h1 = Math.sin(t * 4.4 + p.phase);
+            const h2 = Math.sin(t * 7.1 + p.phase * 1.7);
+            const pulse = 0.38 + 0.62 * (0.5 + 0.35 * h1 + 0.15 * h2);
+            shade = 0.45 + 0.88 * pulse;
+            chCode = pulse > 0.72 ? 64 : (pulse > 0.48 ? 42 : 43);
+
+            if (p.isBulbCore) {
+              activeLights++;
+              if (rz > -0.15 && pulse > 0.58) {
+                bloomHalos.push({
+                  col: proj.col, row: proj.row,
+                  radiusCells: 2.6 + 1.8 * pulse,
+                  r: p.r, g: p.g, b: p.b,
+                  alpha: (0.14 + 0.18 * pulse) * alpha
+                });
+              }
+            }
+          } else if (p.type === TYPE_GIFT || p.type === TYPE_RIBBON) {
+            shade = 0.44 + 0.66 * ndotl;
+            if (p.charOverride) {
+              chCode = p.charOverride.charCodeAt(0);
+            } else {
+              const idx = Math.min(RAMP_SMOOTH.length - 1, Math.floor(shade * (RAMP_SMOOTH.length - 1)));
+              chCode = RAMP_SMOOTH[idx].charCodeAt(0);
+            }
+          }
+
+          // Smooth alpha blending against background charcoal for soft entrance/exit
+          const finalR = lerp(BG_R, outR * shade, alpha);
+          const finalG = lerp(BG_G, outG * shade, alpha);
+          const finalB = lerp(BG_B, outB * shade, alpha);
+
+          putCell(proj.col, proj.row, proj.depth, chCode, finalR, finalG, finalB);
+        }
+
+        // 3. Crown apex with radiant 5-pointed star topper (Stage 6)
+        renderStarTopper(t, rotAngle, camYOffset, camXOffset, loopFade);
+
+        // 4. Reveal "MERRY CHRISTMAS 2026" beneath the trunk (Stage 7)
+        const visibleLetters = renderFestiveMessage(t, loopFade);
+
+        if (!embedMode) {
+          // 5. Minimal Retro-Terminal HUD Overlays
+          const timerStr = `t ${t.toFixed(2).padStart(5, '0')}s`;
+          putText(COLS - timerStr.length - 2, 1, timerStr, 148, 160, 180);
+
+          const rotStr = `rotation ${rotDeg.toFixed(2).padStart(6, '0')}°`;
+          const statsStr = `lights ${activeLights}   letters ${visibleLetters}`;
+          putText(2, ROWS - 3, rotStr, 108, 124, 148);
+          putText(2, ROWS - 2, statsStr, 108, 124, 148);
+
+          const hintStr = `[Space] Pause  [R] Restart  [S] Save PNG`;
+          putText(COLS - hintStr.length - 2, ROWS - 2, hintStr, 86, 102, 122);
+        }
+
+        // 6. Blit glyph atlas + additive glow bloom onto canvas
+        flushBuffersToCanvas();
+      }
+
+      /**
+       * Blits pre-rendered glyphs from the offscreen atlas and renders additive bloom halos
+       */
+      function flushBuffersToCanvas() {
+        const w = COLS * cellW;
+        const h = ROWS * cellH;
+
+        ctx.globalCompositeOperation = 'source-over';
+        if (embedMode) {
+          ctx.clearRect(0, 0, w, h);
+        } else {
+          ctx.fillStyle = BG_HEX;
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        // Bucket cells by quantized RGB color so we tint the glyph strip once per color bucket
+        const buckets = new Map();
+        for (let idx = 0; idx < GRID_SIZE; idx++) {
+          const chCode = charBuffer[idx];
+          if (chCode === 32) continue;
+
+          // Quantize RGB to 4-unit steps for super-fast batching while preserving smooth gradients
+          const qr = rBuffer[idx] & 0xfc;
+          const qg = gBuffer[idx] & 0xfc;
+          const qb = bBuffer[idx] & 0xfc;
+          const key = (qr << 16) | (qg << 8) | qb;
+
+          let list = buckets.get(key);
+          if (!list) {
+            list = [];
+            buckets.set(key, list);
+          }
+          list.push(idx);
+        }
+
+        // Draw each color bucket via offscreen tint + drawImage
+        for (const [key, indices] of buckets.entries()) {
+          const r = (key >> 16) & 0xff;
+          const g = (key >> 8) & 0xff;
+          const b = key & 0xff;
+
+          tintCtx.globalCompositeOperation = 'copy';
+          tintCtx.drawImage(atlasCanvas, 0, 0);
+          tintCtx.globalCompositeOperation = 'source-in';
+          tintCtx.fillStyle = `rgb(${r},${g},${b})`;
+          tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
+
+          for (let i = 0; i < indices.length; i++) {
+            const idx = indices[i];
+            const chIdx = charBuffer[idx] - 32;
+            const c = idx % COLS;
+            const rRow = (idx / COLS) | 0;
+
+            ctx.drawImage(
+              tintCanvas,
+              chIdx * atlasCellW, 0, atlasCellW, atlasCellH,
+              c * cellW, rRow * cellH, cellW, cellH
+            );
+          }
+        }
+
+        // Additive soft radial bloom halos around fairy lights, ornaments, and star topper
+        if (bloomHalos.length > 0) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          for (let i = 0; i < bloomHalos.length; i++) {
+            const halo = bloomHalos[i];
+            if (halo.alpha <= 0.01) continue;
+
+            const px = (halo.col + 0.5) * cellW;
+            const py = (halo.row + 0.5) * cellH;
+            const radiusPx = halo.radiusCells * cellW;
+
+            const grad = ctx.createRadialGradient(px, py, 0, px, py, radiusPx);
+            grad.addColorStop(0, `rgba(${halo.r},${halo.g},${halo.b},${halo.alpha.toFixed(3)})`);
+            grad.addColorStop(0.5, `rgba(${halo.r},${halo.g},${halo.b},${(halo.alpha * 0.35).toFixed(3)})`);
+            grad.addColorStop(1, `rgba(${halo.r},${halo.g},${halo.b},0)`);
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(px, py, radiusPx, 0, TAU);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+
+      // =========================================================================
+      // 6. INTERACTIVE CONTROLS, SCREENSHOT EXPORT & INTERPOLATED LOOP
+      // =========================================================================
+      const btnPause = document.getElementById('btnPause');
+      const pauseLabel = document.getElementById('pauseLabel');
+      const btnRestart = document.getElementById('btnRestart');
+      const btnSave = document.getElementById('btnSave');
+      const toastMsg = document.getElementById('toastMsg');
+      let toastTimeout = null;
+
+      function showToast(message) {
+        toastMsg.textContent = message;
+        toastMsg.style.opacity = '1';
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toastMsg.style.opacity = '0';
+        }, 1800);
+      }
+
+      function togglePause() {
+        isPaused = !isPaused;
+        pauseLabel.textContent = isPaused ? 'Resume' : 'Pause';
+        showToast(isPaused ? 'Animation Paused' : 'Animation Resumed');
+      }
+
+      function restartAnimation() {
+        elapsed = 0;
+        currentRotAngle = 0;
+        currentRotVel = TARGET_ROT_VEL;
+        if (isPaused) {
+          isPaused = false;
+          pauseLabel.textContent = 'Pause';
+        }
+        renderFrame(0, 0);
+        showToast('Restarted Sequence (t = 0.00s)');
+      }
+
+      function saveScreenshot() {
+        try {
+          const link = document.createElement('a');
+          link.download = 'christmas_tree_2026.png';
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast('Saved christmas_tree_2026.png');
+        } catch (err) {
+          showToast('Unable to export PNG');
+        }
+      }
+
+      btnPause.addEventListener('click', togglePause);
+      btnRestart.addEventListener('click', restartAnimation);
+      btnSave.addEventListener('click', saveScreenshot);
+
+      if (!embedMode) {
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            togglePause();
+          } else if (e.key === 'r' || e.key === 'R') {
+            restartAnimation();
+          } else if (e.key === 's' || e.key === 'S') {
+            e.preventDefault();
+            saveScreenshot();
+          }
+        });
+      }
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        renderFrame(elapsed, 0);
+      });
+
+      function animate(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const rawDt = (timestamp - lastTimestamp) / 1000;
+        lastTimestamp = timestamp;
+
+        // Clamp delta-time to <= 0.05s for rock-solid frame pacing
+        const dt = Math.min(rawDt, 0.05);
+
+        // Exponentially smooth rotation velocity on pause/resume transitions
+        const targetVel = isPaused ? 0 : TARGET_ROT_VEL;
+        const velLerp = 1 - Math.exp(-10 * dt);
+        currentRotVel += (targetVel - currentRotVel) * velLerp;
+
+        if (!isPaused || currentRotVel > 0.001) {
+          if (!isPaused) {
+            elapsed += dt;
+            if (elapsed >= LOOP_DURATION) {
+              elapsed %= LOOP_DURATION;
+            }
+          }
+          currentRotAngle += currentRotVel * dt;
+          renderFrame(elapsed, dt);
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('load', () => {
+        buildScene();
+        initSnow();
+        resizeCanvas();
+        renderFrame(0, 0);
+        requestAnimationFrame(animate);
+      });
+    })();
+  </script>
+</body>
+</html>
